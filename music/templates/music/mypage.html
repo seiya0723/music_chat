@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang='ja'>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>マイページ</title>
+
+</head>
+<body>
+
+    <h1>ユーザー情報</h1>
+
+    <ul>
+        <li>ID: {{ request.user.id  }}</li>
+        <li>Email:  {{ request.user.email }}</li>
+        <li>名前 : {{ request.user.first_name }}</li>
+        <li>名字: {{ request.user.last_name }}</li>
+        <li>画像: {{ request.image }}</li>
+        <li>画像： <img src="{{ teacher.pic.image.url }}" alt=""></li>
+        <li>メッセージ: {{ teacher.message }}</li>
+        <li>都市: {{ request.user.city }}</li>
+        <li>学歴: {{ teacher.academic }}</li>
+        <li>経験: {{ teacher.experience }}</li>
+        <li>資格: {{ teacher.certificate }}</li>
+        <li>生徒からの評価: {{ request.reputation }}</li>
+        <li>一言: {{ teacher.oneword }}</li>
+        <li>楽器: {{ teacher.inst }}</li>
+        <li>言語: {{ teacher.lang }}</li>
+    </ul>
+    <a href="{% url 'teacher-music' user.id %}" class="btn btn-primary">一覧へ</a>
+     <a href="{% url 'update-music' user.id %}" class="btn btn-primary">編集する</a>
+     <a href="{% url 'delete-music' user.id %}" class="btn btn-primary">削除する</a>
+
+    <form action="" method="POST"
+        {% csrf_token %}
+
+    </form>
+
+</div>
+
+</body>
+</html>    
+    

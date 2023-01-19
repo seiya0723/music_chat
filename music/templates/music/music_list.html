@@ -1,0 +1,16 @@
+
+
+{% block title %}先生一覧{% endblock %}
+
+{% block content %}
+  {% for item in object_list %}
+    <div class="card">
+      <h5 class="card-header">{{ item.title }}</h5>
+      <div class="card-body">
+        <p class="card-text">{{item.text}}</p>
+        <a href="{% url 'detail-music' item.pk %}" class="btn btn-primary"></a>
+        <h6 class="card-title">{{ item.category }}</h6>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock content %}

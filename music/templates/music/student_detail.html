@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang='ja'>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>マイページ</title>
+
+</head>
+<body>
+
+    <h1>ユーザー情報</h1>
+
+    <ul>
+        <li>ID: {{ user.id  }}</li>
+        <li>Email:  {{ user.email }}</li>
+        <li>名前 : {{ user.first_name }}</li>
+        <li>名字: {{ user.last_name }}</li>
+        <li>都市: {{ user.city }}</li>
+        <li>ひとこと: {{ user.introduction }}</li>
+        {% if user.image %}
+        <li>画像： <img src="{{user.image.url}}" alt=""></li>
+        {% endif %}
+    </ul>
+    <form action="" method="POST"
+        {% csrf_token %}
+
+    </form>
+  </body>
+  </html>        

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang='ja'>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>マイページ</title>
+
+</head>
+<body>
+
+    <h1>ユーザー情報</h1>
+
+    <ul>
+        <li>ID: {{ teacher.user_id.id  }}</li>
+        <li>Email:  {{ teacher.user_id.email }}</li>
+        <li>名前 : {{ teacher.user_id.first_name }}</li>
+        <li>名字: {{ teacher.user_id.last_name }}</li>
+        <li>都市: {{ teacher.user_id.city }}</li>
+        <li>ひとこと: {{ teachrt.user_id.introduction }}</li>
+        {% if teacher.user_id.image.url %}
+        <li>画像： <img src="{{teacher.user_id.image.url}}" alt=""></li>
+        {% endif %}
+
+        <li>料金目安($/h): {{ teacher.fee }}</li>
+        <li>メッセージ: {{ teacher.message }}</li>
+
+        <li>学歴: {{ teacher.academic }}</li>
+        <li>経験: {{ teacher.experience }}</li>
+        <li>資格: {{ teacher.certificate }}</li>
+        <li>生徒からの評価: {{ request.reputation }}</li>
+        <li>一言: {{ teacher.oneword }}</li>
+        <li>楽器: {{ teacher.teaching_inst.inst_name }}</li>
+        <li>楽器経験年数: {{ teacher.year }}</li>
+        <li>楽器レベル: {{ teacher.revel }}</li>
+        {% for lang in teacher.lang.all %}
+          <li>言語: {{ lang.language_name }}</li>
+          {% endfor %}
+        <!--<li>言語: {{ teacher.lang.language_name }}</li>-->
+    </ul>
+    <form action="" method="POST"
+        {% csrf_token %}
+
+    </form>
+  </body>
+  </html>
+

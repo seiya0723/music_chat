@@ -1,0 +1,11 @@
+
+{% block title %}プロファイル作成{% endblock %}
+
+{% block content %}
+    <form method='POST'>
+        {% csrf_token %}
+        {{form.as_p}}
+        {{user.email}}
+        <input type='submit' value='作成する'>
+    </form>
+{% endblock content%} 
