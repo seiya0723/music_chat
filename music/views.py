@@ -1,13 +1,20 @@
 from .serializers import DirectMessageSerializer
 from django.shortcuts import render,redirect
-#from django.contrib.auth import logout
+from django.contrib.auth import logout
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, DeleteView,UpdateView,DetailView
+from django.views.generic import ListView, CreateView,UpdateView, DetailView
 from .models import Teacher,DirectMessage
 from django.views import View
 from .serializers import DirectMessageSerializer
 from accounts.models import User
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from .forms import TeacherForm, DirectMessageForm
+
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('music:index')
 
 class ListMusicView(ListView):
     template_name = 'music_list.html'
@@ -26,9 +33,20 @@ class DetailMusicView(View):
 
         #Teacher.objects.filter(id=pk).first()
         context = {}
-        context["teacher"]  =Teacher.objects.filter(id=pk).first()
+        # context["teacher"]  = Teacher.objects.filter(id=pk).first()
+        context["teacher"]  = Teacher.objects.filter(id=pk).first()
 
         return render(request,"music/music_detail.html" ,context)
+
+
+
+
+
+
+
+
+
+
 
 class DetailStudentView(View):
 
@@ -53,16 +71,6 @@ class DetailStudentView(View):
 
         #生徒である場合レンダリング
         return render(request, "music/student_detail.html", context )
-
-
-    
-
-
-
-
-
-
-
 
 
 
@@ -113,28 +121,54 @@ class CreateMusicView(CreateView):
 #    success_url = '/music/'
 
 
-class DeleteMusicView(DeleteView):
-    template_name = 'music/music_confirm_delete.html'
-    model = Teacher
-    success_url = '/music/'
+#class DeleteMusicView(View):
+    #template_name = 'music/music_confirm_delete.html'
+    #model = Teacher
+    #success_url = '/music/'
+
+    
+
+class DeleteMusicView(View):
+    
+    def get(self, request, pk, *args, **kwargs):
+        teacher = Teacher.objects.filter(id=pk).first()
+
+        #teacherの存在確認(存在しない場合はリダイレクト)
+        if not teacher:
+            return  redirect("music:index")
+
+        #ここで存在しないteacherの.user_idを参照するとエラーになる
+        if teacher.user_id == request.user:
+
+            #TODO:ここで削除対象のUserモデルのデータを特定する。その上で.delete()を実行する。
+            user    = User.objects.filter(id=request.user.id).first()
+            user.delete()
+
+        # トップページへリダイレクト
+        return redirect("music:index")
+ 
 
 
 
+# ここがトップページ( http://127.0.0.1:8000/ )にアクセスした時実行される
 def index_view(request):
 
-    #TODO: 未ログインユーザーの場合、ログインページへリダイレクトするように仕立てる .is_authenticated属性を参照し、未ログインであればFalseが帰ってくる
-    """
+    #TODO: 未ログインユーザーの場合、ログインページへリダイレクトするように仕立てる
+    # .is_authenticated属性を参照し、未ログインであればFalseが帰ってくる
     if not request.user.is_authenticated:
         return redirect("accounts:login")
-    """
 
+    #ここで先生かどうかを判定する。未ログイン状態ではis_musicianは参照できない。
     if request.user.is_musician:
         #TODO:ここにDetailMusicViewSecondのnameを書く
-        return redirect("music:detail-music")
+        return redirect("music:detail-music" , request.user.id )
 
+
+    #アクセスした人が先生ではない場合、先生の一覧を表示する
 
     object_list = Teacher.objects.all()
     return render(request, 'music/index.html',{'object_list': object_list})
+
 
 
 

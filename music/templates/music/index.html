@@ -11,7 +11,7 @@
         <img src="{{ item.user_id.image.url }}" />
       {% endif %}
       <div class="mt-3">
-        <a href="{% url 'music:detail-music' item.pk %}">詳細へ</a>  
+        <a href="{% url 'music:detail-music' item.id %}">詳細へ</a>  
       </div>  
     </div>
   {% endfor %}

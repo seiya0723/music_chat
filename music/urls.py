@@ -42,6 +42,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('music/<int:pk>/list/', views.ListView.as_view(), name="teacher-music"),
     path('music/mypage/', views.MypageView.as_view(), name="mypage"),
+    path('logout/',views.logout_view,name='logout'),
 
 
 ]
