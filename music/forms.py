@@ -18,6 +18,11 @@ class DirectMessageForm(forms.ModelForm):
         fields  = ["sender","receiver","message"]
 
 
-    
+"""
+# フォームクラスの役割
 
+- DBにデータを保存する時、DBの制約に則って保存しなければならない
+- 前もってDBの制約に則っているかをフォームクラスを使ってチェックする
+- 制約に則っていれば保存、則っていなければ破棄
 
+"""

@@ -8,9 +8,9 @@ from django.views import View
 from .serializers import DirectMessageSerializer
 from accounts.models import User
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from .forms import TeacherForm, DirectMessageForm
+from .forms import TeacherForm, DirectMessageForm #TODO: DirectMessageFormをimportしておく。
 
-
+from django.db.models import Q
 
 def logout_view(request):
     logout(request)
@@ -28,25 +28,49 @@ class ListMusicView(ListView):
 #   model = Teacher
 
 class DetailMusicView(View):
-#ここにはis_musicianが使われてないから、全員出てきてしまうのでは？
     def get(self, request, pk, *args, **kwargs):
 
-        #Teacher.objects.filter(id=pk).first()
         context = {}
-        # context["teacher"]  = Teacher.objects.filter(id=pk).first()
         context["teacher"]  = Teacher.objects.filter(id=pk).first()
+
+
+        # 自分が送ったメッセージと自分宛のメッセージをすべて表示
+
+        # .filter()での条件式が、 sender=request.user.id もしくは receiver=request.user.id のOR検索になるので、クエリビルダを使用する。
+        #  OR検索の方法: https://noauto-nolife.com/post/django-or-and-search/
+
+        # 冒頭に from django.db.models import Q を書いておく。
+
+        # ↓のように|とQ() を使用してOR検索を行う。
+        context["messages"] = DirectMessage.objects.filter( Q(sender=request.user.id) | Q(receiver=request.user.id) )
+
 
         return render(request,"music/music_detail.html" ,context)
 
+    def post(self, request, pk, *args, **kwargs):
+    
+        #TODO:ここでダイレクトメッセージの保存処理を書いていく。
+
+        #送信されたデータは(messageのみ、ここにreceiverとsenderを入れる。)
+        #【注意】ただし、request.POSTは書き換えできないので、以下はエラーになってしまう。
+        # request.POST["sender"]  = request.user.id
+
+        copied              = request.POST.copy()
+        copied["sender"]    = request.user.id 
+
+        # 送信先の先生のpkからUserモデルのidを記録する (注意:これは生徒→先生の場合。先生→生徒の場合は↓の処理を書き換える)
+        teacher             = Teacher.objects.filter(id=pk).first()
+        copied["receiver"]  = teacher.user_id
+
+        # 書き換えたデータをバリデーションする。
+        form    = DirectMessageForm(copied)
+        
+        if form.is_valid():
+            print("バリデーションOK")
+            form.save()
 
 
-
-
-
-
-
-
-
+        return redirect("music:detail-music", pk)    
 
 class DetailStudentView(View):
 
@@ -161,7 +185,8 @@ def index_view(request):
     #ここで先生かどうかを判定する。未ログイン状態ではis_musicianは参照できない。
     if request.user.is_musician:
         #TODO:ここにDetailMusicViewSecondのnameを書く
-        return redirect("music:detail-music" , request.user.id )
+        teacher = Teacher.objects.filter(user_id=request.user.id).first()
+        return redirect("music:detail-music" , teacher.id )
 
 
     #アクセスした人が先生ではない場合、先生の一覧を表示する
@@ -178,7 +203,7 @@ def index_view(request):
 
 class UpdateMusicView(UpdateView): 
     model = Teacher
-    fields = ("movie","fee","academic","experience","certificate","reputation","message","oneword","lang","inst","year","revel","pic","user_id")
+    fields = ("movie","fee","academic","experience","certificate","reputation","message","oneword","lang","year","revel","pic","user_id")
     template_name = 'music/music_update.html'
     success_url = '/music/' 
 
@@ -194,8 +219,12 @@ class MypageView(View):
 
     def post(self, request, *args, **kwargs):
 
+
+
         return redirect("mypage") 
 
+
+"""
 class DirectMessageViewSet(ModelViewSet):
     queryset = DirectMessage.objects.all()
     serializer_class = DirectMessageSerializer
@@ -217,6 +246,7 @@ class InboxListView(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(receiver=self.request.user)
+"""       
 
 
 
