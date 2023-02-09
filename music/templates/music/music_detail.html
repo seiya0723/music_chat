@@ -38,15 +38,27 @@
         <!--<li>言語: {{ teacher.lang.language_name }}</li>-->
     </ul>
 
-    {# ダイレクトメッセージフォーム #}
+    {#ダイレクトメッセージフォーム#}
     <form action="" method="POST">
         {% csrf_token %}
+
+        {# 先生→生徒 に送る場合、ここで送り先(receiver)を指定する。#}
+        {% if request.user.is_musician %}
+        <select name="receiver">
+            <option value="">送信先の生徒を選んでください</option>
+            {% for student in students %}
+            <option value="{{ student.id }}">{{ student }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+
         <textarea name="message" cols="30" rows="10"></textarea>
         <input type="submit" value="送信">
     </form>
 
-    
-    {# TODO:ここに自分が関わったメッセージが表示される。 #}
+
+    {# ここに自分が関わったメッセージが表示される。#}
+
     {% for message in messages %}
     <div>
         <div>送信元: {{ message.sender }}</div>
@@ -54,25 +66,42 @@
         <div>送信時刻: {{ message.created_at }}</div>
         <div>本文: {{ message.message }}</div>
     </div>
-    {% endfor %}
+    {% endfor %}        
 
 
+    <h2>生徒→先生</h2>
+
+    {% for sender_message in sender_messages %}
+    <div>
+        <div>送信元: {{ sender_message.sender }}</div>
+        <div>宛先: {{ sender_message.receiver }}</div>
+        <div>送信時刻: {{ sender_message.created_at }}</div>
+        <div>本文: {{ sender_message.message }}</div>
+    </div>
+    {% endfor %}        
+
+    <h2>先生→生徒</h2>
+
+    {% for receiver_message in receiver_messages %}
+    <div>
+        <div>送信元: {{ receiver_message.sender }}</div>
+        <div>宛先: {{ receiver_message.receiver }}</div>
+        <div>送信時刻: {{ receiver_message.created_at }}</div>
+        <div>本文: {{ receiver_message.message }}</div>
+    </div>
+    {% endfor %}        
 
 
 
     {# 編集フォーム #}  
-    <form action="{% url 'music:update-music' teacher.id %}" method="POST">
-        {% csrf_token %}
-        {# TODO:ここに編集用のinputタグ、textareaタグ等をそれぞれ書いていく #}  
-        <input type="submit" value="編集">
-    </form>
+    <a href="{% url 'music:update-music' teacher.id %}">編集する</a>
+
+
     {# 削除ボタン #}  
     <a href="{% url 'music:delete-music' teacher.id %}">削除する</a>　
     </form>    
 
-
-    
-    {# </form> #}
+    </form>
   </body>
   </html>
 

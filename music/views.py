@@ -33,8 +33,24 @@ class DetailMusicView(View):
         context = {}
         context["teacher"]  = Teacher.objects.filter(id=pk).first()
 
+        #TODO:編集用のフォームを作る
+        context["form"]     = TeacherForm(instance=context["teacher"])
 
         # 自分が送ったメッセージと自分宛のメッセージをすべて表示
+
+
+        # 自分が送ったメッセージ
+        context["sender_messages"]      = DirectMessage.objects.filter( sender=request.user.id )
+
+        # 自分が受け取ったメッセージ
+        context["receiver_messages"]    = DirectMessage.objects.filter( receiver=request.user.id )
+
+        # 生徒のユーザーモデルを取り出す。
+        context["students"]             = User.objects.filter(is_musician=False)
+
+
+        """
+        # ↓送信も受信も一緒にまとめて出てくる
 
         # .filter()での条件式が、 sender=request.user.id もしくは receiver=request.user.id のOR検索になるので、クエリビルダを使用する。
         #  OR検索の方法: https://noauto-nolife.com/post/django-or-and-search/
@@ -43,22 +59,41 @@ class DetailMusicView(View):
 
         # ↓のように|とQ() を使用してOR検索を行う。
         context["messages"] = DirectMessage.objects.filter( Q(sender=request.user.id) | Q(receiver=request.user.id) )
+        """
 
 
         return render(request,"music/music_detail.html" ,context)
 
+    # このpkはTeacherのid。 Userのidではない
     def post(self, request, pk, *args, **kwargs):
     
         #TODO:ここでダイレクトメッセージの保存処理を書いていく。
 
-        #送信されたデータは(messageのみ、ここにreceiverとsenderを入れる。)
-        #【注意】ただし、request.POSTは書き換えできないので、以下はエラーになってしまう。
-        # request.POST["sender"]  = request.user.id
-
         copied              = request.POST.copy()
         copied["sender"]    = request.user.id 
 
-        # 送信先の先生のpkからUserモデルのidを記録する (注意:これは生徒→先生の場合。先生→生徒の場合は↓の処理を書き換える)
+
+        #生徒→先生の場合、receiverを指定する
+        if not request.user.is_musician:
+            # 一旦Teacherを特定する。teacherからUserのidを取り出して記録する
+            teacher             = Teacher.objects.filter(id=pk).first()
+            copied["receiver"]  = teacher.user_id
+
+
+        # これでsender message receiverの3つが揃ったので、バリデーションして保存する。
+        form    = DirectMessageForm(copied)
+        
+        # sender message receiverの3つ の値が正常であれば form.is_valid()はTrue
+        if form.is_valid():
+            print("バリデーションOK")
+
+            # DBにデータを保存する
+            form.save()
+
+
+
+
+        """
         teacher             = Teacher.objects.filter(id=pk).first()
         copied["receiver"]  = teacher.user_id
 
@@ -69,7 +104,7 @@ class DetailMusicView(View):
             print("バリデーションOK")
             form.save()
 
-
+        """
         return redirect("music:detail-music", pk)    
 
 class DetailStudentView(View):
@@ -207,6 +242,16 @@ class UpdateMusicView(UpdateView):
     template_name = 'music/music_update.html'
     success_url = '/music/' 
 
+    ## DetailMusicView から直接 編集処理をしたい場合は POSTを
+    ## DetailMusicView から UpdateMusicViewへ移動して編集処理をしたい場合は、GETを
+
+    #TODO:現状、自分以外のユーザーも編集ができてしまう。
+    #対策1: UpdateViewではなくViewを継承してpostメソッドを作る。
+    #対策2: pkを元にTeacherで検索。teacher.user_id と request.user が一致していれば編集許可
+    # 削除の前にやった処理と同じ
+
+
+
 class MypageView(View):
     def get(self, request, *args, **kwargs):
 
@@ -257,3 +302,4 @@ class InboxListView(ReadOnlyModelViewSet):
 
 #context_object_name = 'object_list'
 #context_object_name = 'object_list'
+
